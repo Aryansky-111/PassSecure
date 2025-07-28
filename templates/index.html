@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-lock me-2"></i>
+                    Password Strength Analyzer
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="password-form">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Enter Password to Analyze</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" placeholder="Type your password here...">
+                            <button class="btn btn-outline-secondary" type="button" id="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>
+                        Analyze Password
+                    </button>
+                </form>
+
+                <div id="analysis-results" class="mt-4" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Password Strength</label>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div id="strength-bar" class="progress-bar" role="progressbar"></div>
+                        </div>
+                        <div id="strength-text" class="d-flex justify-content-between">
+                            <span id="strength-level"></span>
+                            <span id="strength-score"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Entropy</label>
+                                <div id="entropy-value" class="badge bg-info"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">SHA256 Hash</label>
+                                <div class="input-group">
+                                    <input type="text" id="sha256-hash" class="form-control font-monospace" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" id="copy-hash">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="patterns-section" class="mb-3" style="display: none;">
+                        <label class="form-label">Security Issues Found</label>
+                        <div id="patterns-list"></div>
+                    </div>
+
+                    <div id="suggestions-section" class="mb-3">
+                        <label class="form-label">Suggestions for Improvement</label>
+                        <ul id="suggestions-list" class="list-unstyled"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Custom Wordlist Generator
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('generate_wordlist') }}" method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="John Doe">
+                        <small class="form-text text-muted">Full name or username</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="birthdate" class="form-label">Birth Date</label>
+                        <input type="text" class="form-control" id="birthdate" name="birthdate" placeholder="01/15/1990 or 15-01-1990">
+                        <small class="form-text text-muted">Any date format (MM/DD/YYYY, DD-MM-YYYY, etc.)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="pet_names" class="form-label">Pet Names</label>
+                        <input type="text" class="form-control" id="pet_names" name="pet_names" placeholder="Fluffy, Max, Bella">
+                        <small class="form-text text-muted">Names of pets, separated by commas</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="custom_words" class="form-label">Custom Words</label>
+                        <textarea class="form-control" id="custom_words" name="custom_words" rows="3" placeholder="company, hobby, favorite things..."></textarea>
+                        <small class="form-text text-muted">Any additional words that might be used in passwords</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="include_leetspeak" name="include_leetspeak" checked>
+                            <label class="form-check-label" for="include_leetspeak">
+                                Include Leetspeak Variations
+                                <small class="d-block text-muted">Convert letters to numbers/symbols (a→@, e→3, etc.)</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="include_years" name="include_years" checked>
+                            <label class="form-check-label" for="include_years">
+                                Include Year Combinations
+                                <small class="d-block text-muted">Add common years (1950-2035) to words</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-download me-2"></i>
+                        Generate & Download Wordlist
+                    </button>
+                </form>
+
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        The generated wordlist will be downloaded as a .txt file that can be used with password cracking tools for security testing.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    How to Use This Tool
+                </h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Password Analyzer</h6>
+                        <ul class="small">
+                            <li>Enter any password to check its strength</li>
+                            <li>Get real-time feedback on security level</li>
+                            <li>See specific suggestions for improvement</li>
+                            <li>Understand entropy and pattern detection</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Wordlist Generator</h6>
+                        <ul class="small">
+                            <li>Enter personal information that might be used in passwords</li>
+                            <li>Generate variations including leetspeak and years</li>
+                            <li>Download the wordlist for security testing</li>
+                            <li>Use with tools like John the Ripper or Hashcat</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
